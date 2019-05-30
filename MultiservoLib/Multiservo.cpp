@@ -147,6 +147,3 @@ bool Multiservo::attached() const
 {
     return m_iPin != PinInvalid;
 }
-
-// vim: sw=2 sts=2 ts=8:
-
