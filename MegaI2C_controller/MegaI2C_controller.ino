@@ -620,7 +620,7 @@ bool VarSpeedServo::isMoving() {
 #include "Wire.h"
 #define I2C_ADDR 0x47
 volatile uint8_t data;
-volatile byte t_data;
+volatile uint16_t t_data;
 VarSpeedServo servo[18];
 //                0,   1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17 
 byte s_pin[18] = {53, 52, 50, 48, 46, 44, 42, 40, 38, 25, 22, 24, 26, 28, 30, 32, 34, 36};
@@ -640,7 +640,12 @@ void I2C_received(byte num)
       
       if((data[3] << 8) | data[4] == 0)
       {
-        t_data = servo[data[0]].isMoving();
+        if(pulseWidth == 10)
+          t_data = servo[data[0]].isMoving();
+        else if(pulseWidth == 15)
+          t_data = servo[data[0]].read();
+        else if(pulseWidth == 20)
+          t_data = servo[data[0]].readMicroseconds();
       }
       else
       {
@@ -667,6 +672,7 @@ void setup()
   Wire.flush();
   Wire.onReceive(I2C_received);
   Wire.onRequest(requestEvent);
+  //Serial.begin(115200);
 }
 void loop()
 {
@@ -686,6 +692,13 @@ void loop()
     }
   }
 }
-void requestEvent() {
-  Wire.write(t_data);
+void requestEvent() 
+{
+  Wire.write(t_data >> 8);
+  Wire.write(t_data & 0xFF);
+  /*
+  Serial.print(t_data >> 8);
+  Serial.print("    ");
+  Serial.println(t_data & 0xFF);
+  */
 }
