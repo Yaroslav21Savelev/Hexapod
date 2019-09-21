@@ -11,13 +11,19 @@ def constrain(x, min, max):
         return x
 
 class leg():
-    def __init__(self, servo, Coxa, Femur, Tibia):
+    def __init__(self, servo, Coxa, Femur, Tibia, x_offset = 0, y_offset = 0, z_offset = 0):
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+        self.z_offset = z_offset
         self.servo = servo
         self.Coxa = Coxa
         self.Femur = Femur
         self.Tibia = Tibia
 
     def move(self, DestX, DestY, DestZ, speed = 255):
+        DestX += self.x_offset
+        DestY += self.y_offset
+        DestZ += self.z_offset
         CoxaL_X = 3
         CoxaL_Y = 0.8
         FemurL = 4.2
