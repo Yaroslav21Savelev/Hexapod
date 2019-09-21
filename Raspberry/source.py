@@ -1,196 +1,87 @@
 from multiservo import Multiservo
 from multiservo import map
+from multiservo import constrain
 import movements
 import ik
-import socketLib
+from sys import exit
+#import socketLib
 import math
 from time import sleep
-servo = Multiservo()
-do = movements.quadro(servo)
-do.attach_all()
+from time import time
+from subprocess import Popen
+import Adafruit_GPIO.SPI as SPI
+import Adafruit_SSD1306
 
-fr = ik.leg(servo, 11, 10, 9)
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
+import subprocess
+process = Popen(['python', '/home/pi/host.py'])
+lastTime = time()
+dsp = Adafruit_SSD1306.SSD1306_128_32(rst=None)
+width = dsp.width
+height = dsp.height
+padding = -2
+top = padding
+bottom = height-padding
+image = Image.new('1', (width, height))
+draw = ImageDraw.Draw(image)
+draw.rectangle((0,0,width,height), outline=0, fill=0)
+font = ImageFont.load_default()
+dsp.begin()
+dsp.clear()
+dsp.display()
+servo = Multiservo()
+fr = ik.leg(servo, 9, 10, 11)
+fl = ik.leg(servo, 0, 1, 2)
+mr = ik.leg(servo, 12, 13, 14, x_offset = -0.7556)
+ml = ik.leg(servo, 3, 4, 5, x_offset = -0.7556)
 br = ik.leg(servo, 15, 16, 17)
 bl = ik.leg(servo, 6, 7, 8)
-fl = ik.leg(servo, 2, 1, 0)
+do = movements.hexa(servo, fr, fl, mr, ml, br, bl)
+do.attach_all()
+attached = 1
+mac = "5C:BA:37:F8:85:11"
 
-
-
-
-
-
-pos = 0
-def forward():
-	x, y, z = 6, 2, -6
-	x_b, y_b, z_b = 7, 0, -9
-	h = 2
-	l = 3
-	low = 50
-	fast = 150
-	s_d = 70
-	h_ = 2
-	global pos
-	if(servo.areMoving()):
-			return
-	elif pos == 0:
-		fr.move(x, y - l, z + h, fast)
-	elif pos == 1:
-		fr.move(x, y + l, z + h, fast)
-	elif pos == 2:
-		fr.move(x, y + l, z + h_, s_d)
-	elif pos == 3:
-		bl.move(x_b, y_b - 1, z_b + h, fast)
-	elif pos == 4:
-		bl.move(x_b, y_b + l, z_b + h, fast)
-	elif pos == 5:
-		bl.move(x_b, y_b + l, z_b, s_d)
-	elif pos == 6:
-		fr.move(x, y, z, low)
-		bl.move(x_b, y_b, z_b, low)
-		fl.move(x, y - l, z, low)
-		br.move(x_b, y_b - l, z_b, low)
-	elif pos == 7:
-		fl.move(x, y - l, z + h, fast)
-	elif pos == 8:
-		fl.move(x, y + l, z + h, fast)
-	elif pos == 9:
-		fl.move(x, y + l, z + h_, s_d)
-	elif pos == 10:
-		br.move(x_b, y_b - l, z_b + h, fast)
-	elif pos == 11:
-		br.move(x_b, y_b + l, z_b + h, fast)
-	elif pos == 12:
-		br.move(x_b, y_b + l, z_b, s_d)
-	elif pos == 13:
-		fr.move(x, y - l, z, low)
-		bl.move(x_b, y_b - l, z_b, low)
-		fl.move(x, y, z, low)
-		br.move(x_b, y_b, z_b, low)
+def update_wlan_oled():
+	dsp.clear()
+	draw.rectangle((0,0,width,height), outline=0, fill=0)
+	cmd = str(subprocess.check_output("iwconfig", shell = True).decode())
+	ESSID = cmd[cmd.find("ESSID:") + 7:cmd.find('" ', cmd.find("ESSID:") + 6)]
+	#print(ESSID)
+	IP = subprocess.check_output("hostname -I", shell = True)
+	draw.text((0, top), "ESSID: " + str(ESSID), font=font, fill=255)
+	draw.text((0, top + 8), "IP: " + str(IP.decode()), font=font, fill=255)
+	
+	if attached:
+		draw.text((0, top + 16), "Attached", font=font, fill=255)
 	else:
-		pos = 0
-		return
-	pos += 1
-
-
-
-def back():
-	x, y, z = 7, 0, -8
-	x_b, y_b, z_b = 6, -3, -6
-	h = 2
-	l = -3
-	low = 50
-	fast = 150
-	s_d = 70
-	h_ = 0.5
-	global pos
-	if(servo.areMoving()):
-			return
-	elif pos == 0:
-		bl.move(x_b, y_b - 1, z_b + h, fast)
-	elif pos == 1:
-		bl.move(x_b, y_b + l, z_b + h, fast)
-	elif pos == 2:
-		bl.move(x_b, y_b + l, z_b + h_, s_d)
-	elif pos == 3:
-		fr.move(x, y - l, z + h, fast)
-	elif pos == 4:
-		fr.move(x, y + l, z + h, fast)
-	elif pos == 5:
-		fr.move(x, y + l, z, s_d)
-	elif pos == 6:
-		fr.move(x, y, z, low)
-		bl.move(x_b, y_b, z_b, low)
-		fl.move(x, y - l, z, low)
-		br.move(x_b, y_b - l, z_b, low)
-	elif pos == 7:
-		br.move(x_b, y_b - l, z_b + h, fast)
-	elif pos == 8:
-		br.move(x_b, y_b + l, z_b + h, fast)
-	elif pos == 9:
-		br.move(x_b, y_b + l, z_b + h_, s_d)
-	elif pos == 10:
-		fl.move(x, y - l, z + h, fast)
-	elif pos == 11:
-		fl.move(x, y + l, z + h, fast)
-	elif pos == 12:
-		fl.move(x, y + l, z, s_d)
-	elif pos == 13:
-		fr.move(x, y - l, z, low)
-		bl.move(x_b, y_b - l, z_b, low)
-		fl.move(x, y, z, low)
-		br.move(x_b, y_b, z_b, low)
+		draw.text((0, top + 16), "Detached", font=font, fill=255)
+	if process.poll() is None:
+		draw.text((0, top + 24), "Streaming on", font=font, fill=255)
 	else:
-		pos = 0
-		return
-	pos += 1
-
-
-'''
-		bl.move(x_b, y_b, z_b, fast)
-		fl.move(x, y, z, fast)
-		br.move(x_b, y_b, z_b, fast)
-'''
-
-def left():
-	x, y, z = 5, 0, -10
-	x_b, y_b, z_b = 5, 0, -10
-	h = 2
-	l = 4
-	low = 50
-	fast = 180
-	s_d = 60
-	global pos
-	if(servo.areMoving()):
-		return
-	elif pos == 0:
-		fr.move(x + l, y, z + h, fast)
-	elif pos == 1:
-		fr.move(x - l, y, z + h, fast)
-	elif pos == 2:
-		fr.move(x - l, y, z, s_d)
-	elif pos == 3:
-		bl.move(x_b - l, y_b, z_b + h, fast)
-	elif pos == 4:
-		bl.move(x_b + l, y_b, z_b + h, fast)
-	elif pos == 5:
-		bl.move(x_b + l, y_b, z_b, s_d)
-	elif pos == 6:
-		fr.move(x, y, z, low)
-		bl.move(x_b, y_b, z_b, low)
-		fl.move(x, y - l, z, low)
-		br.move(x_b, y_b + l, z_b, low)
-	elif pos == 7:
-		fl.move(x - l, y, z + h, fast)
-	elif pos == 8:
-		fl.move(x + l, y, z + h, fast)
-	elif pos == 9:
-		fl.move(x + l, y, z, s_d)
-	elif pos == 10:
-		br.move(x_b + l, y_b, z_b + h, fast)
-	elif pos == 11:
-		br.move(x_b - l, y_b, z_b + h, fast)
-	elif pos == 12:
-		br.move(x_b - l, y_b, z_b, s_d)
-	elif pos == 13:
-		fr.move(x + l, y, z, low)
-		bl.move(x_b - l, y_b, z_b, low)
-		fl.move(x, y, z, low)
-		br.move(x_b, y_b, z_b, low)
-	else:
-		pos = 0
-		return
-	pos += 1
-
+		draw.text((0, top + 24), "Streaming off", font=font, fill=255)
+	dsp.image(image)
+	dsp.display()
 
 try:
-	addr = sys.argv[1]
+	from xbox_controller import joy
+	jstk = joy()
+	update_wlan_oled()
 except:
-	 addr = "192.168.0.123"
-print("on")
-session = socketLib.client(addr, 4219)
-print("on")
-session.connect()
-print("on")
+	while True:
+		update_wlan_oled()
+		try:
+			cmd = str(subprocess.check_output('echo "connect 5C:BA:37:F8:85:11\nexit" | bluetoothctl', shell = True).decode())
+			print(cmd)
+			sleep(5)
+			from xbox_controller import joy
+			jstk = joy()
+			update_wlan_oled()
+			break
+		except:
+			print("Try again")
+
 
 
 
@@ -201,57 +92,119 @@ def prop(x, in_min, in_max, out_min, out_max):
 mode = 0
 x, y, z = 0, 0, 0
 x_, y_, z_ = x, y, z
-while True:
-	data = session.read()
-	if not data is None:
-		if data == "forward":
-			mode = 1
-		elif data == "back":
-			mode = -1
-		elif data == "stop":
-			mode = 0
-			fr.move(5, 0, -8)
-			bl.move(5, 0, -8)
-			fl.move(5, 0, -8)
-			br.move(5, 0, -8)
-		elif data == "agile":
-			mode = 2
-		elif data == "attach":
-			do.attach_all()
-		elif data == "detach":
-			mode = 10
+
+
+def menu():
+	global process
+	tmp = 9999
+	x, y, z, mode = 0, 0, 0, 9999
+	pos = 1
+	while True:
+		try:
+			x, y, z, tmp = jstk.update(x, y, z, mode)
+		except:
 			for i in range(18):
 				servo.detach(i)
+			dsp.clear()
+			draw.rectangle((0,0,width,height), outline=0, fill=0)
+			draw.text((0, top), "Joy disconnected", font=font, fill=255)
+			dsp.image(image)
+			dsp.display()
+			if process.poll() is None:
+				process.terminate()
+			exit()
+		
+		if mode != tmp:
+			if tmp == 25:
+				return
+			elif tmp == 36:
+				pos = constrain(pos + 1, 1, 3)
+			elif tmp == 35:
+				pos = constrain(pos - 1, 1, 3)
+			elif tmp == 3 and pos == 3:
+				for i in range(18):
+					servo.detach(i)
+				dsp.clear()
+				dsp.display()
+				if process.poll() is None:
+					process.terminate()
+				exit()
+			elif tmp == 3 and pos == 1:
+				#print(process.poll())
+				if not process.poll() is None:
+					process = Popen(['python', '/home/pi/host.py'])
+			elif tmp == 10 and pos == 1:
+				#print(process.poll())
+				if process.poll() is None:
+					process.terminate()
+		dsp.clear()
+		draw.rectangle((0,0,width,height), outline=0, fill=0)
+		draw.text((0, top), "Menu", font=font, fill=255)
+		if pos == 1:
+			draw.text((0, top + 8), ">Stream A-on|X-off", font=font, fill=255)
+			draw.text((0, top + 16), "P2", font=font, fill=255)
+			draw.text((0, top + 24), "Quit", font=font, fill=255)
+		elif pos == 2:
+			draw.text((0, top + 8), "Stream", font=font, fill=255)
+			draw.text((0, top + 16), ">P2", font=font, fill=255)
+			draw.text((0, top + 24), "Quit", font=font, fill=255)
+		elif pos == 3:
+			draw.text((0, top + 8), "Stream", font=font, fill=255)
+			draw.text((0, top + 16), "P2", font=font, fill=255)
+			draw.text((0, top + 24), ">Quit", font=font, fill=255)
+		dsp.image(image)
+		dsp.display()
+
+while True:
+	try:
+		x, y, z, tmp = jstk.update(x, y, z, mode)
+	except:
+		for i in range(18):
+			servo.detach(i)
+		dsp.clear()
+		draw.rectangle((0,0,width,height), outline=0, fill=0)
+		draw.text((0, top), "Joy disconnected", font=font, fill=255)
+		dsp.image(image)
+		dsp.display()
+		if process.poll() is None:
+			process.terminate()
+		exit()
+	if time() - lastTime > 2:
+		update_wlan_oled()
+		lastTime = time()
+	if mode != tmp:
+		if tmp == 10: #attach/detach
+			attached = not attached
+			if attached:
+				do.attach_all()
+			else:
+				for i in range(18):
+					servo.detach(i)
+		elif tmp == 30:
+			servo.holder(0)
+		elif tmp == 31:
+			servo.holder(1)
+		elif tmp == 25:
+			tmp = 0
+			menu()
 		else:
-			#print(data)
-			if data[0] == "2":
-				z = int(data[2:len(data)])
-				z = map(z, -100, 100, -3.0, 3.0)
-				z = round(z, 1)
-				print("z", z)
-			if data[0] == "3":
-				y = int(data[2:len(data)])
-				y = map(y, -100, 100, -4.0, 4.0)
-				y = round(y, 1)
-				print("y", y)
-			if data[0] == "4":
-				x = int(data[2:len(data)])
-				x = map(x, -100, 100, -3.0, 3.0)
-				x = round(x, 1)
-				print("x", x)
-			
-			
-			
-	if mode == 2:
-		if(x_ != x or y_ != y or z_ != z):
-			fr.move(7 - x, y, -7 + z, 80)
-			bl.move(7 + x, y, -7 + z, 80)
-			fl.move(7 + x, y, -7 + z, 80)
-			br.move(7 - x, y, -7 + z, 80)
+			mode = tmp
+		#pos = 0
+	if mode == 1:
+		#print(x, y)
+		if abs(x) >= 0.5 or abs(y) >= 0.5:
+			do.go(-y, -x * 1.2, z)
+		elif (x_ != x or y_ != y or z_ != z):
+			do.go(0, 0, z, 1)
 			x_, y_, z_ = x, y, z
-	elif mode == 1:
-		forward()
-	elif mode == -1:
-		back()
+	elif mode == 2:
+		if(x_ != x or y_ != y or z_ != z):
+			do.agile(x, y, z)
+			x_, y_, z_ = x, y, z
+	elif mode == 3:
+		if(x_ != x or y_ != y or z_ != z):
+			do.flex(x, y, z)
+			x_, y_, z_ = x, y, z
+	
 
 
