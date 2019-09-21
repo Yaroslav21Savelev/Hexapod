@@ -22,6 +22,7 @@ class Multiservo:
         self.max = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.pulseWidth = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.isStopped =  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    
     def attach(self, pin, min = 490, max = 2400):
         self.valid[pin] = 1
         self.min[pin] = min
@@ -30,7 +31,16 @@ class Multiservo:
     def detach(self, pin):
         self.writeMicroseconds(pin, 0, 10)
         self.valid[pin] = 0
-
+    def holder(self, state):
+        self.wire.write(bytes([0]))
+        if state == 1:
+            self.wire.write(bytes([31 >> 8]))
+            self.wire.write(bytes([31 & 0xFF]))
+        else:
+            self.wire.write(bytes([30 >> 8]))
+            self.wire.write(bytes([30 & 0xFF]))
+        self.wire.write(bytes([0 >> 8]))
+        self.wire.write(bytes([0 & 0xFF]))
     def isMoving(self, pin):
         if(self.valid[pin]):
             self.wire.write(bytes([pin]))
@@ -104,10 +114,3 @@ class Multiservo:
             pulseWidth = map(angle, 0, 180, self.min[pin], self.max[pin])
             self.writeMicroseconds(pin, pulseWidth, speed)
 
-if __name__ == "__main__":
-    servo = Multiservo()
-    servo.attach(2)
-    servo.write(2, 120, 5)
-    for i in range(300):
-        servo.isMoving(2)
-    print("end")
