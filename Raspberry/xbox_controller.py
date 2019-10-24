@@ -23,13 +23,12 @@ class cap:
 class joy:
     def __init__(self):
         from evdev import InputDevice
-        self.ctrl = InputDevice('/dev/input/event1')
+        self.ctrl = InputDevice('/dev/input/event0')
         print(self.ctrl)
     def read(self):
         event = self.ctrl.read_one()
         while not event is None:
-            if event.code == 5:
-                print(event.code, event.value)
+            print(event.code, event.value)
             event = self.ctrl.read_one()
     def prop(self, x, in_min, in_max, out_min, out_max):
 	    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
@@ -45,6 +44,8 @@ class joy:
                 mode = 1
             elif code == btn.a and val:
                 mode = 3
+            elif code == btn.b and val:
+                mode = 4
             elif code == btn.split and val:
                 mode = 2
             elif code == btn.LB and val:
