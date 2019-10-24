@@ -10,6 +10,7 @@ class btn:
     R = 318
     LB = 310
     RB = 311
+    get = list([304, 305, 308, 307, 315, 158, 317, 318, 310, 311])
 class cap:
     x = 16
     y = 17
@@ -19,11 +20,13 @@ class cap:
     LY = 1
     LT = 10
     RT = 9
+    get = list([16, 17, 5, 2, 0, 1, 10, 9])
 
 class joy:
     def __init__(self):
         from evdev import InputDevice
         self.ctrl = InputDevice('/dev/input/event0')
+        self.vals = list([0] * 18)
         print(self.ctrl)
     def read(self):
         event = self.ctrl.read_one()
@@ -32,47 +35,38 @@ class joy:
             event = self.ctrl.read_one()
     def prop(self, x, in_min, in_max, out_min, out_max):
 	    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-    def update(self, x, y, z, mode):
-        event = self.ctrl.read_one()
-        while not event is None:
-            #print(event.code, event.value)
-            
-            code, val = event.code, event.value
-            if code == btn.x and val:
-                mode = 10
-            elif code == btn.y and val:
-                mode = 1
-            elif code == btn.a and val:
-                mode = 3
-            elif code == btn.b and val:
-                mode = 4
-            elif code == btn.split and val:
-                mode = 2
-            elif code == btn.LB and val:
-                mode = 30
-            elif code == btn.RB and val:
-                mode = 31
-            elif code == cap.y and val == -1:
-                mode = 35
-            elif code == cap.y and val:
-                mode = 36
-            elif code == cap.RX:
-                x = self.prop(val, 0, 65535, -2.5, 2.5)
-            elif code == cap.RY:
-                y = self.prop(val, 0, 65535, -2.5, 2.5)
-            elif code == cap.RT:
-                z = self.prop(val, 0, 1023, 3.0, -3.0)
-            elif code == btn.menu and val:
-                mode = 25
-                return x, y, z, mode
-            event = self.ctrl.read_one()
-        return x, y, z, mode
-        
     
+    def read(self):
+        #from evdev import ecodes
+        event = self.ctrl.read_one()
+        #print(dir(self.ctrl.read_one()))
+        while not event is None:
+            code, val, t = event.code, event.value, event.type
+            if t == 1 or t == 3 or t == 4:
+                #print(event.code, event.value)
+                for i in range(len(btn.get)):
+                    if code == btn.get[i]:
+                        self.vals[i] = val
+                for i in range(len(cap.get)):
+                    if code == cap.get[i]:
+                        self.vals[i + 10] = val
+            event = self.ctrl.read_one()
+        out = self.vals.copy()
+        for i in range(12, 16):
+            out[i] = self.prop(self.vals[i], 0, 65535, -2.5, 2.5)
+        for i in range(16, 18):
+            out[i] = self.prop(self.vals[i], 0, 1023, 3.0, -3.0)
+        return out
 if __name__ == "__main__":
     joy = joy()
+    from time import sleep
     while True:
-        joy.read()
+        print(joy.read())
+
+        #joy.btn()
+        sleep(0.5)
+        #print(joy.btn(0))
+        #joy.read()
         #x, y, z, mode = joy.update(0, 0, 0, 0)
 
 '''
