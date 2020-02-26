@@ -1,4 +1,8 @@
 #!/usr/bin/env python3.7
+from picamera import PiCamera
+from picamera.array import PiRGBArray
+import cv2
+import PIL
 from multiservo import Multiservo
 from multiservo import map
 from multiservo import constrain
@@ -17,6 +21,7 @@ from PIL import ImageDraw
 from PIL import ImageFont
 import subprocess
 from mpu6050 import mpu6050
+from pygame import mixer
 #process = Popen(['python', '/home/pi/lcd_cam.py'])
 #process = Popen(['python', '/home/pi/host.py'])
 #cam_face = Popen(['python', '/home/pi/lcd_cam.py'])
@@ -38,15 +43,17 @@ dsp.display()
 servo = Multiservo()
 fr = ik.leg(servo, 9, 10, 11, z_offset = 0.5)
 fl = ik.leg(servo, 0, 1, 2)
-mr = ik.leg(servo, 12, 13, 14, x_offset = 0.3, z_offset = 0.2)# -0.7556
-ml = ik.leg(servo, 3, 4, 5, x_offset = 0.3, z_offset = 0.2)
+mr = ik.leg(servo, 12, 13, 14, x_offset = -0.5, z_offset = 0)# -0.7556
+ml = ik.leg(servo, 3, 4, 5, x_offset = 0, z_offset = 0)
 br = ik.leg(servo, 15, 16, 17)
 bl = ik.leg(servo, 6, 7, 8)
 do = movements.hexa(servo, fr, fl, mr, ml, br, bl)
 do.attach_all()
 attached = 1
 mac = "5C:BA:37:F8:85:11"
-
+mixer.init()
+mixer.music.load("/home/pi/startup.mp3")
+mixer.music.play()
 def update_wlan_oled(con_joy = 0):
 	dsp.clear()
 	draw.rectangle((0,0,width,height), outline=0, fill=0)
@@ -204,12 +211,12 @@ def funcs():
 		while(servo.areMoving()):
 				pass
 		mr.move(x_c + 1, y_c + 1, z_c - 3.5, s_speed)
-		ml.move(x_c + 3, y_c + 1, z_c - 3.2, s_speed)
+		ml.move(x_c + 1, y_c + 1, z_c - 3.5, s_speed)
 		while(servo.areMoving()):
 				pass
 		mode = 4
 
-	elif a and pos == 5: # Angle
+	elif a and pos == 5 and mode != 5: # Angle
 		h = -7
 		off = 3
 		x = 5
@@ -259,11 +266,59 @@ def funcs():
 	dsp.image(image)
 	dsp.display()
 
-def faces():
-	global cam_face
-	if not cam_face.poll() is None:
-		cam_face = Popen(['python', '/home/pi/lcd_cam.py'])
 
+class face:
+	def __init__(self):
+		self.width = dsp.width
+		self.height = dsp.height
+		padding = -2
+		top = padding
+		bottom = height-padding
+		image = Image.new('1', (width, height))
+		draw = ImageDraw.Draw(image)
+		draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
+		font = ImageFont.load_default()
+		self.frame_size = (1280, 720)
+		self.frame_center = (self.frame_size[0] // 2, self.frame_size[1] // 2)
+		self.camera = PiCamera()
+		self.camera.resolution = self.frame_size
+		self.camera.framerate = 60
+		self.rawCapture = PiRGBArray(self.camera, size=self.frame_size)
+		cascPath = "/home/pi/haarcascade_frontalface_default.xml"
+		self.faceCascade = cv2.CascadeClassifier(cascPath)
+		self.n = 0
+		#log.basicConfig(filename='webcam.log',level=log.INFO)
+	def detect(self):
+		next(self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True))
+		frame = self.rawCapture.array
+		orig = frame.copy()
+		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+		frame = cv2.rotate(frame, rotateCode=cv2.ROTATE_180)
+		faces = self.faceCascade.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+		for (x, y, w, h) in faces:
+			cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+			crop = frame[ y : y + h, x : x + w]
+			rszd = cv2.resize(crop, (128, 32), interpolation = cv2.INTER_AREA)
+			image = Image.fromarray(rszd).convert("1")
+			mixer.music.load("/home/pi/pop.mp3")
+			mixer.music.play()
+			print("Face_" + str(self.n))
+			orig = cv2.rotate(orig, rotateCode=cv2.ROTATE_180)
+			cv2.rectangle(orig, (x, y), (x+w, y+h), (0, 255, 0), 2)
+			directory = "/home/pi/faces/face_" + str(self.n) + ".jpg"
+			cv2.imwrite(directory, orig)
+			dsp.image(image)
+			dsp.display()
+			self.n += 1
+		'''
+		rszd = cv2.resize(frame, (128, 32), interpolation=cv2.INTER_AREA)
+		image = Image.fromarray(rszd).convert("1")
+		dsp.image(image)
+		dsp.display()
+		'''
+		self.rawCapture.truncate(0)
+
+face_d = face()
 old_dsp = 0 
 pos = 1
 old = 0
@@ -282,7 +337,7 @@ while True:
 		pos = constrain(pos + y_cap, 1, 5)
 		old = y_cap
 	if old_dsp != x_cap:
-		dsp_mode = constrain(dsp_mode + x_cap, 0, 2)
+		dsp_mode = constrain(dsp_mode + x_cap, 0, 3)
 		old_dsp = x_cap
 	if jstk.read()[8]:
 		servo.holder(0)
@@ -304,6 +359,8 @@ while True:
 		menu()
 	elif dsp_mode == 2:
 		info()
+	elif dsp_mode == 3:
+		face_d.detect()
 	if mode == 1:
 		x = jstk.read()[13]
 		y = jstk.read()[12]
