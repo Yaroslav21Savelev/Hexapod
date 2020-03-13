@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 capturing = False
 cap = cv.VideoCapture(0)
-bot = telebot.TeleBot('1005601952:AAGVqDe0LoKtHUs9xIgRvvzxKugcbzwr6zI')
+bot = telebot.TeleBot('')
 @bot.message_handler(commands=['start'])
 def start(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
