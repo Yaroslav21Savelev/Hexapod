@@ -16,3 +16,5 @@
   + MS_board.ino - code for multiservo ATmega 2560 based board
   + MS_board.lay6 - SprintLayout file, multiservo board layout
   #### Add "sudo python3 /home/pi/source.py > /home/pi/startup_log.txt &" to /etc/rc.local
+#materials
+  +https://rf2035.net/labs/faculty/1/lab/8/
