@@ -27,6 +27,18 @@
 + cd Adafruit_Python_SSD1306
 + sudo python3 setup.py install
 + cd ..
+#### config joy
++ sudo apt-get install xboxdrv
 + pip3 install evdev
++ echo 'options bluetooth disable_ertm=Y' | sudo tee -a /etc/modprobe.d/bluetooth.conf
++ sudo reboot
++ sudo bluetoothctl
+##### in bluetoothctl
++ agent on
++ default-agent
++ scan on
++ connect [MAC]
+
 # materials
+  +https://www.pyimagesearch.com/2019/09/16/install-opencv-4-on-raspberry-pi-4-and-raspbian-buster/
   +https://rf2035.net/labs/faculty/1/lab/8/
