@@ -35,10 +35,10 @@
 + sudo bluetoothctl
 ##### in bluetoothctl
 + agent on
-+ default-agent
-+ scan on
-+ connect [MAC]
++ default-agent /n
+ scan on /n
+ connect [MAC]
 
 # materials
-  +https://www.pyimagesearch.com/2019/09/16/install-opencv-4-on-raspberry-pi-4-and-raspbian-buster/
-  +https://rf2035.net/labs/faculty/1/lab/8/
+  + https://www.pyimagesearch.com/2019/09/16/install-opencv-4-on-raspberry-pi-4-and-raspbian-buster/
+  + https://rf2035.net/labs/faculty/1/lab/8/
