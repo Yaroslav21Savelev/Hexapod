@@ -17,27 +17,27 @@
   + MS_board.lay6 - SprintLayout file, multiservo board layout
   #### Add "sudo python3 /home/pi/source.py > /home/pi/startup_log.txt &" to /etc/rc.local
 #### installing i2c dislpay lib
-+ sudo apt-get update
-+ sudo apt-get install build-essential python-pip python-dev python-smbus git
-+ git clone https://github.com/adafruit/Adafruit_Python_GPIO.git
-+ cd Adafruit_Python_GPIO
-+ sudo python3 setup.py install
-+ cd ..
-+ git clone https://github.com/adafruit/Adafruit_Python_SSD1306.git
-+ cd Adafruit_Python_SSD1306
-+ sudo python3 setup.py install
-+ cd ..
+    sudo apt-get update
+    sudo apt-get install build-essential python-pip python-dev python-smbus git
+    git clone https://github.com/adafruit/Adafruit_Python_GPIO.git
+    cd Adafruit_Python_GPIO
+    sudo python3 setup.py install
+    cd ..
+    git clone https://github.com/adafruit/Adafruit_Python_SSD1306.git
+    cd Adafruit_Python_SSD1306
+    sudo python3 setup.py install
+    cd ..
 #### config joy
-+ sudo apt-get install xboxdrv
-+ pip3 install evdev
-+ echo 'options bluetooth disable_ertm=Y' | sudo tee -a /etc/modprobe.d/bluetooth.conf
-+ sudo reboot
-+ sudo bluetoothctl
+    sudo apt-get install xboxdrv
+    pip3 install evdev
+    echo 'options bluetooth disable_ertm=Y' | sudo tee -a /etc/modprobe.d/bluetooth.conf
+    sudo reboot
+    sudo bluetoothctl
 ##### in bluetoothctl
-+ agent on
-+ default-agent /n
- scan on /n
- connect [MAC]
+    agent on
+    default-agent /n
+    scan on /n
+    connect [MAC]
 
 # materials
   + https://www.pyimagesearch.com/2019/09/16/install-opencv-4-on-raspberry-pi-4-and-raspbian-buster/
