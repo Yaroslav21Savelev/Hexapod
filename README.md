@@ -15,7 +15,9 @@
 ## Other files:
   + MS_board.ino - code for multiservo ATmega 2560 based board
   + MS_board.lay6 - SprintLayout file, multiservo board layout
-  #### Add "sudo python3 /home/pi/source.py > /home/pi/startup_log.txt &" to /etc/rc.local
+#### config RasPi
+    chmod +x source.py
+    Add "sudo python3 /home/pi/source.py > /home/pi/startup_log.txt &" to /etc/rc.local
 #### installing i2c dislpay lib
     sudo apt-get update
     sudo apt-get install build-essential python-pip python-dev python-smbus git
