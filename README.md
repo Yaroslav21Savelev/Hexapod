@@ -31,7 +31,6 @@
     cd ..
 #### config joy
     sudo apt-get install xboxdrv
-    pip3 install evdev
     echo 'options bluetooth disable_ertm=Y' | sudo tee -a /etc/modprobe.d/bluetooth.conf
     sudo reboot
     sudo bluetoothctl
