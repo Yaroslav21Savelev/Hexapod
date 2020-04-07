@@ -33,10 +33,10 @@
     echo 'options bluetooth disable_ertm=Y' | sudo tee -a /etc/modprobe.d/bluetooth.conf
     sudo reboot
     sudo bluetoothctl
-##### in bluetoothctl
+##### in bluetoothctl term
     agent on
-    default-agent /n
-    scan on /n
+    default-agent
+    scan on
     connect [MAC]
 
 # materials
