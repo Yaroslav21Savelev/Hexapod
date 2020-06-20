@@ -1,6 +1,7 @@
 # Hexapod
 ### Show.pptx - main presentation
 ### [Controller app for android](https://drive.google.com/file/d/1xm58UqlrQnhqSUL2H1lBoyYgTHVY_Xh2/view?usp=sharing)
+### [SolidWorks models]https://grabcad.com/library/agile-hexapod-1
 ##  Raspberry Pi files:
   + source.py - main code file
   + app_controller.py - android app controller interface
@@ -13,8 +14,6 @@
   + lcd_cam.py - test code for drawing PiCamera frames on oled display
   + source_xbox.py - old main code file with xbox one controller support
   + xbox_controller.py - xbox controller interface
-##  SolidWorks files:
-  + AGILE_assem - full assembly of robot
 ## Other files:
   + MS_board.ino - code for multiservo ATmega 2560 based board
   + MS_board.lay6 - SprintLayout file, multiservo board layout
