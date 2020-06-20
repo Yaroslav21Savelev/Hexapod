@@ -3,14 +3,17 @@
 ### [Controller app for android](https://drive.google.com/file/d/1xm58UqlrQnhqSUL2H1lBoyYgTHVY_Xh2/view?usp=sharing)
 ##  Raspberry Pi files:
   + source.py - main code file
-  + xbox_controller.py - xbox controller interface
+  + app_controller.py - android app controller interface
   + multiservo.py - py lib for multiservo board communication via UART
   + ik.py - formules of inverse kinematics
   + movements.py - robot's movements in a cartesian system
   + mpu6050.py - py lib for MPU6050 communication
-  + pulseWidth.json - servo configuration file 
+  + pulseWidth.json - servos configuration file 
   + haarcascade_frontalface_default.xml - Haar cascade
   + lcd_cam.py - test code for drawing PiCamera frames on oled display
+  
+  + source_xbox.py - old main code file with xbox one controller support
+  + xbox_controller.py - xbox controller interface
 ##  SolidWorks files:
   + AGILE_assem - full assembly of robot
 ## Other files:
@@ -30,7 +33,7 @@
     cd Adafruit_Python_SSD1306
     sudo python3 setup.py install
     cd ..
-#### config joy
+#### config joy (not important for android controller app)
     sudo apt-get install xboxdrv
     echo 'options bluetooth disable_ertm=Y' | sudo tee -a /etc/modprobe.d/bluetooth.conf
     sudo reboot
