@@ -57,9 +57,21 @@ class leg():
                 jointLocalZ = bz
         gama = polarAngle(jointLocalX, jointLocalZ, None)
         alpha = polarAngle(localDestX - jointLocalX, DestZ - jointLocalZ, gama)
-        self.servo.write(self.Coxa, int(norm(degrees(theta))), speed)
-        self.servo.write(self.Femur, int(norm(degrees(gama))), speed)
-        self.servo.write(self.Tibia, int(norm(degrees(alpha))), speed)
+
+
+        #Fix it!
+        
+        Coxa_dst = abs(self.servo.read(self.Coxa) - int(norm(degrees(theta))))
+        Femur_dst = abs(self.servo.read(self.Femur) - int(norm(degrees(gama))))
+        Tibia_dst = abs(self.servo.read(self.Tibia) - int(norm(degrees(alpha))))
+        speed_koeff = max([Coxa_dst, Femur_dst, Tibia_dst])
+        if speed_koeff != 0:
+            self.servo.write(self.Coxa, int(
+                norm(degrees(theta))), speed / speed_koeff * Coxa_dst)
+            self.servo.write(self.Femur, int(
+                norm(degrees(gama))), speed / speed_koeff * Femur_dst)
+            self.servo.write(self.Tibia, int(
+                norm(degrees(alpha))), speed / speed_koeff * Tibia_dst)
 
 def norm(val):
     if val > 180:

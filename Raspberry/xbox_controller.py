@@ -57,6 +57,7 @@ class joy:
         for i in range(16, 18):
             out[i] = self.prop(self.vals[i], 0, 1023, 3.0, -3.0)
         return out
+#[a, b, y, x, options, split, 0, 0, c_x, c_y, l_b, r_b, J_r_y, J_r_x, J_l_x, J_l_y]
 if __name__ == "__main__":
     joy = joy()
     from time import sleep

@@ -15,14 +15,13 @@ class hexa():
 	def attach_all(self):
 		servo = self.servo
 		import json
-		with open("/home/pi/pulseWidth.json", "r") as read_file:
-			srv = json.load(read_file)
-			for i in srv["left"].items():
-				for s in i[1]:
-					servo.attach(s[0], s[1], s[2])
-			for i in srv["right"].items():
-				for s in i[1]:
-					servo.attach(s[0], s[1], s[2])
+		srv = json.load(open("/home/pi/pulseWidth.json", "r"))
+		for i in srv["left"].items():
+			for s in i[1]:
+				servo.attach(s[0], s[1], s[2])
+		for i in srv["right"].items():
+			for s in i[1]:
+				servo.attach(s[0], s[1], s[2])
 
 	def map(self, x, in_min, in_max, out_min, out_max):
 		return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
@@ -129,7 +128,7 @@ class hexa():
 		x, y, z = 4.5, 0, -6
 		l = 3
 		h = 0
-		low = 30
+		low = 10
 		fast = 130
 		x_, y_, z_ = 1, 3, 0
 		if(self.servo.areMoving()):

@@ -56,20 +56,20 @@ mac = "5C:BA:37:F8:85:11"
 mixer.init()
 mixer.music.load("/home/pi/startup.mp3")
 mixer.music.play()
-addr, tag = None, None
-
-def update_wlan_oled(addr, tag = None):
+def update_wlan_oled(con_joy = 0):
 	dsp.clear()
 	draw.rectangle((0,0,width,height), outline=0, fill=0)
 	cmd = str(subprocess.check_output("iwconfig", shell = True).decode())
 	ESSID = cmd[cmd.find("ESSID:") + 7:cmd.find('" ', cmd.find("ESSID:") + 6)]
 	IP = subprocess.check_output("hostname -I", shell = True)
 	draw.text((0, top), "ESSID: " + str(ESSID), font=font, fill=255)
-	draw.text((0, top + 8), addr[1] + ":" + str(addr[2]), font=font, fill=255)
-	temp = "Temp: " + str(g_sensor.get_temp() * 10 // 10)
-	draw.text((0, top + 16), temp, font=font, fill=255)
-	if not tag is None:
-		draw.text((0, top + 24), tag, font=font, fill=255)
+	draw.text((0, top + 8), "IP: " + str(IP.decode()), font=font, fill=255)
+	if con_joy:
+		temp = "Temp: " + str(g_sensor.get_temp() * 10 // 10)
+		draw.text((0, top + 16), "Connecting joy" + temp, font=font, fill=255)
+	else:
+		temp = "Temp: " + str(g_sensor.get_temp() * 10 // 10)
+		draw.text((0, top + 16), temp, font=font, fill=255)
 	'''
 	if process.poll() is None:
 		draw.text((0, top + 24), "Streaming on", font=font, fill=255)
@@ -79,15 +79,28 @@ def update_wlan_oled(addr, tag = None):
 	dsp.image(image)
 	dsp.display()
 
-from app_controller import joy
-#update_wlan_oled(1)
-port = 8000
-while True:
-	try:
-		jstk = joy(port)
-		break
-	except:
-		port += 1
+try:
+	from xbox_controller import joy
+	jstk = joy()
+	update_wlan_oled(1)
+except:
+	while True:
+		update_wlan_oled(1)
+		try:
+			cmd = str(subprocess.check_output('echo "connect 5C:BA:37:F8:85:11\nexit" | bluetoothctl', shell = True).decode())
+			print(cmd)
+			sleep(5)
+			from xbox_controller import joy
+			jstk = joy()
+			update_wlan_oled()
+			print("Connected joy")
+			break
+		except Exception as e:
+			print(e)
+			print("Try again")
+
+
+
 
 
 
@@ -156,7 +169,7 @@ def menu():
 def info():
 	global lastTime
 	if time() - lastTime > 0.5: # update display every 2 seconds
-		update_wlan_oled(addr, tag=tag)
+		update_wlan_oled()
 		lastTime = time()
 
 def funcs():
@@ -315,22 +328,13 @@ x_old = 0
 offset_x = 0
 dsp_mode = 0
 while True:
-	ret = jstk.update()
-	if ret is None:
-		print("Reconnecting...")
-		tag, img = jstk.info(port)
-		print(tag)
-		dsp.image(img)
-		dsp.dim(2)
-		dsp.display()
-		addr = jstk.getIP()
-		update_wlan_oled(addr, tag=tag)
-		jstk.connect()
-		
-	a = jstk.read()[0]
-	x_btn = jstk.read()[3]
-	x_cap = jstk.read()[10]
-	y_cap = jstk.read()[11]
+	try:
+		a = jstk.read()[0]
+		x_btn = jstk.read()[3]
+		x_cap = jstk.read()[10]
+		y_cap = jstk.read()[11]
+	except:
+		quit()
 	if old != y_cap:
 		pos = constrain(pos + y_cap, 1, 5)
 		old = y_cap
