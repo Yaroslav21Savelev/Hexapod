@@ -11,7 +11,6 @@
   + pulseWidth.json - servos configuration file 
   + haarcascade_frontalface_default.xml - Haar cascade
   + lcd_cam.py - test code for drawing PiCamera frames on oled display
-  
   + source_xbox.py - old main code file with xbox one controller support
   + xbox_controller.py - xbox controller interface
 ##  SolidWorks files:
@@ -38,7 +37,7 @@
     echo 'options bluetooth disable_ertm=Y' | sudo tee -a /etc/modprobe.d/bluetooth.conf
     sudo reboot
     sudo bluetoothctl
-##### in bluetoothctl term
+###### in bluetoothctl term
     agent on
     default-agent
     scan on
